@@ -1,0 +1,62 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.2.0'
+    }
+}
+
+project.ext.repo = [
+        restApi    : [
+                name       : "sistcoop",
+                iso3166    : [
+                        name: "iso3166",
+                        uri : "https://github.com/sistcoop/iso3166.git"
+                ],
+                iso4217    : [
+                        name: "iso4217",
+                        uri : "https://github.com/sistcoop/iso4217.git"
+                ],
+                ubigeo     : [
+                        name: "ubigeo",
+                        uri : "https://github.com/sistcoop/ubigeo.git"
+                ],
+                persona    : [
+                        name: "persona",
+                        uri : "https://github.com/sistcoop/persona.git"
+                ],
+                rrhh       : [
+                        name: "rrhh",
+                        uri : "https://github.com/sistcoop/rrhh.git"
+                ],
+                cooperativa: [
+                        name: "cooperativa",
+                        uri : "https://github.com/sistcoop/cooperativa.git"
+                ]
+        ],
+        restangular: [],
+]
+
+import org.ajoberstar.grgit.*
+
+def cloneGit(path, uri) {
+    File folder = new File(path)
+    if (!folder.exists()) {
+        def cloneOptions = [dir: path, uri: uri]
+        println cloneOptions
+        Grgit.clone(cloneOptions).close()
+    }
+}
+
+task cloneAllRestApi << {
+    def basePath = project.ext.repo.restApi.name
+
+    cloneGit(basePath + "/" + project.ext.repo.restApi.iso3166.name, project.ext.repo.restApi.iso3166.uri);
+    cloneGit(basePath + "/" + project.ext.repo.restApi.iso4217.name, project.ext.repo.restApi.iso4217.uri);
+    cloneGit(basePath + "/" + project.ext.repo.restApi.ubigeo.name, project.ext.repo.restApi.ubigeo.uri);
+    cloneGit(basePath + "/" + project.ext.repo.restApi.persona.name, project.ext.repo.restApi.persona.uri);
+    cloneGit(basePath + "/" + project.ext.repo.restApi.rrhh.name, project.ext.repo.restApi.rrhh.uri);
+    cloneGit(basePath + "/" + project.ext.repo.restApi.cooperativa.name, project.ext.repo.restApi.cooperativa.uri);
+}
