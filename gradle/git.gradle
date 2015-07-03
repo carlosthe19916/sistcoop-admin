@@ -59,3 +59,42 @@ task cloneAllRestApi << {
     cloneGit(basePath + "/" + project.ext.repo.restApi.rrhh.name, project.ext.repo.restApi.rrhh.uri);
     cloneGit(basePath + "/" + project.ext.repo.restApi.cooperativa.name, project.ext.repo.restApi.cooperativa.uri);
 }
+
+task releaseAllTag << {
+    def version = "1.0-beta-1"
+    def message = "Release of version ${version}"
+
+    def basePath = project.ext.repo.restApi.name
+
+    def repoIso3166 = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.iso3166.name)
+    def repoIso4217 = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.iso4217.name)
+    def repoUbigeo = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.ubigeo.name)
+    def repoPersona = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.persona.name)
+    def repoRrhh = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.rrhh.name)
+    def repoCooperativa = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.cooperativa.name)
+
+    repoIso3166.tag.add(name: version, message: message, force: true)
+    repoIso4217.tag.add(name: version, message: message, force: true)
+    repoUbigeo.tag.add(name: version, message: message, force: true)
+    repoPersona.tag.add(name: version, message: message, force: true)
+    repoRrhh.tag.add(name: version, message: message, force: true)
+    repoCooperativa.tag.add(name: version, message: message, force: true)
+
+    repoIso3166.push()
+    repoIso3166.push(tags: true)
+
+    repoIso4217.push()
+    repoIso4217.push(tags: true)
+
+    repoUbigeo.push()
+    repoUbigeo.push(tags: true)
+
+    repoPersona.push()
+    repoPersona.push(tags: true)
+
+    repoRrhh.push()
+    repoRrhh.push(tags: true)
+
+    repoCooperativa.push()
+    repoCooperativa.push(tags: true)
+}
