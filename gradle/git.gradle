@@ -45,7 +45,6 @@ def cloneGit(path, uri) {
     File folder = new File(path)
     if (!folder.exists()) {
         def cloneOptions = [dir: path, uri: uri]
-        println cloneOptions
         Grgit.clone(cloneOptions).close()
     }
 }
