@@ -61,40 +61,77 @@ task cloneAllRestApi << {
 }
 
 task releaseAllTag << {
-    def version = "1.0-beta-1"
-    def message = "Release of version ${version}"
+    def projectVersion = [
+            version: "1.0-beta-1",
+            message: "Release of version 1.0-beta-1"
+    ]
+    def credential = [
+            username:"",
+            password:""
+    ]
 
     def basePath = project.ext.repo.restApi.name
 
-    def repoIso3166 = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.iso3166.name)
-    def repoIso4217 = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.iso4217.name)
-    def repoUbigeo = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.ubigeo.name)
-    def repoPersona = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.persona.name)
-    def repoRrhh = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.rrhh.name)
-    def repoCooperativa = Grgit.open(dir: basePath + "/" + project.ext.repo.restApi.cooperativa.name)
+    def repoIso3166 = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.iso3166.name), new Credentials(username: credential.username, password: credential.password))
+    def repoIso4217 = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.iso4217.name), new Credentials(username: credential.username, password: credential.password))
+    def repoUbigeo = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.ubigeo.name), new Credentials(username: credential.username, password: credential.password))
+    def repoPersona = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.persona.name), new Credentials(username: credential.username, password: credential.password))
+    def repoRrhh = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.rrhh.name), new Credentials(username: credential.username, password: credential.password))
+    def repoCooperativa = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.cooperativa.name), new Credentials(username: credential.username, password: credential.password))
 
-    repoIso3166.tag.add(name: version, message: message, force: true)
-    repoIso4217.tag.add(name: version, message: message, force: true)
-    repoUbigeo.tag.add(name: version, message: message, force: true)
-    repoPersona.tag.add(name: version, message: message, force: true)
-    repoRrhh.tag.add(name: version, message: message, force: true)
-    repoCooperativa.tag.add(name: version, message: message, force: true)
+    def status = repoIso3166.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoIso3166.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+    status = repoIso4217.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoIso4217.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+    status = repoUbigeo.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoUbigeo.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+    status = repoPersona.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoPersona.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+    status = repoRrhh.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoRrhh.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+    status = repoCooperativa.status()
+    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repoCooperativa.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
+    }
+
+    repoIso3166.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
+    repoIso4217.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
+    repoUbigeo.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
+    repoPersona.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
+    repoRrhh.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
+    repoCooperativa.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
 
     repoIso3166.push()
     repoIso3166.push(tags: true)
+    repoIso3166.close()
 
     repoIso4217.push()
     repoIso4217.push(tags: true)
+    repoIso4217.close()
 
     repoUbigeo.push()
     repoUbigeo.push(tags: true)
+    repoUbigeo.close()
 
     repoPersona.push()
     repoPersona.push(tags: true)
+    repoPersona.close()
 
     repoRrhh.push()
     repoRrhh.push(tags: true)
+    repoRrhh.close()
 
     repoCooperativa.push()
     repoCooperativa.push(tags: true)
+    repoCooperativa.close()
 }
