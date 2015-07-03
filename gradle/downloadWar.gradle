@@ -1,0 +1,25 @@
+repositories {
+    maven {
+        url "http://master.dl.sourceforge.net/project"
+    }
+}
+
+configurations {
+    sistcoop
+}
+
+dependencies {
+    sistcoop group: 'sistcoop', name: 'iso3166', version: '1.0-beta-1', ext: 'war'
+    sistcoop group: 'sistcoop', name: 'iso4217', version: '1.0-beta-1', ext: 'war'
+    sistcoop group: 'sistcoop', name: 'ubigeo', version: '1.0-beta-1', ext: 'war'
+    sistcoop group: 'sistcoop', name: 'persona', version: '1.0-beta-1', ext: 'war'
+    sistcoop group: 'sistcoop', name: 'rrhh', version: '1.0-beta-1', ext: 'war'
+    sistcoop group: 'sistcoop', name: 'cooperativa', version: '1.0-beta-1', ext: 'war'
+}
+
+ext.downloadDir = file("$buildDir/download/artifacts")
+
+task fetchToDoWar(type: Copy) {
+    from configurations.sistcoop
+    into downloadDir
+}

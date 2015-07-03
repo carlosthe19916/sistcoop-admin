@@ -13,3 +13,4 @@ dependencies {
 
 apply from: "$rootDir/gradle/versioning.gradle"
 apply from: "$rootDir/gradle/git.gradle"
+apply from: "$rootDir/gradle/downloadWar.gradle"
