@@ -8,130 +8,134 @@ buildscript {
     }
 }
 
+ext.githubDownloadFolder = "repositories"
+
 project.ext.repo = [
-        restApi    : [
-                name       : "sistcoop",
-                iso3166    : [
-                        name: "iso3166",
-                        uri : "https://github.com/sistcoop/iso3166.git"
-                ],
-                iso4217    : [
-                        name: "iso4217",
-                        uri : "https://github.com/sistcoop/iso4217.git"
-                ],
-                ubigeo     : [
-                        name: "ubigeo",
-                        uri : "https://github.com/sistcoop/ubigeo.git"
-                ],
-                persona    : [
-                        name: "persona",
-                        uri : "https://github.com/sistcoop/persona.git"
-                ],
-                rrhh       : [
-                        name: "rrhh",
-                        uri : "https://github.com/sistcoop/rrhh.git"
-                ],
-                cooperativa: [
-                        name: "cooperativa",
-                        uri : "https://github.com/sistcoop/cooperativa.git"
-                ]
+        sistcoop        : [
+                folderName     : "sistcoop",
+                iso3166        : [folderName: "iso3166", uri: "https://github.com/sistcoop/iso3166.git"],
+                iso4217        : [folderName: "iso4217", uri: "https://github.com/sistcoop/iso4217.git"],
+                ubigeo         : [folderName: "ubigeo", uri: "https://github.com/sistcoop/ubigeo.git"],
+                persona        : [folderName: "persona", uri: "https://github.com/sistcoop/persona.git"],
+                rrhh           : [folderName: "rrhh", uri: "https://github.com/sistcoop/rrhh.git"],
+                cooperativa    : [folderName: "cooperativa", uri: "https://github.com/sistcoop/cooperativa.git"],
+                socio          : [folderName: "socio", uri: "https://github.com/sistcoop/socio.git"],
+                producto       : [folderName: "producto", uri: "https://github.com/sistcoop/producto.git"],
+                credito        : [folderName: "credito", uri: "https://github.com/sistcoop/credito.git"],
+                sistcoopJsBower: [folderName: "sistcoop-js-bower", uri: "https://github.com/sistcoop/sistcoop-js-bower.git"],
         ],
-        restangular: [],
+        restangularFiles: [
+                folderName   : "sistcoop-restangularfiles",
+                sgIso3166    : [folderName: "sg-iso3166", uri: "https://github.com/sistcoop-restangularfiles/sg-iso3166.git"],
+                sgIso4217    : [folderName: "sg-iso4217", uri: "https://github.com/sistcoop-restangularfiles/sg-iso4217.git"],
+                sgUbigeo     : [folderName: "sg-ubigeo", uri: "https://github.com/sistcoop-restangularfiles/sg-ubigeo.git"],
+                sgPersona    : [folderName: "sg-persona", uri: "https://github.com/sistcoop-restangularfiles/sg-persona.git"],
+                sgRrhh       : [folderName: "sg-rrhh", uri: "https://github.com/sistcoop-restangularfiles/sg-rrhh.git"],
+                sgCooperativa: [folderName: "sg-cooperativa", uri: "https://github.com/sistcoop-restangularfiles/sg-cooperativa.git"],
+                sgSocio      : [folderName: "sg-socio", uri: "https://github.com/sistcoop-restangularfiles/sg-socio.git"],
+                sgProducto   : [folderName: "sg-producto", uri: "https://github.com/sistcoop-restangularfiles/sg-producto.git"]
+        ],
+        angularFiles    : [
+                folderName   : "sistcoop-angularfiles",
+                sgUtils      : [folderName: "sg-utils", uri: "https://github.com/sistcoop-angularjsfiles/sg-utils.git"],
+                uiSelectUtils: [folderName: "sg-select-utils", uri: "https://github.com/sistcoop-angularjsfiles/ui-select-utils.git"]
+        ],
+        meanjsfiles     : [
+                folderName: "sistcoop-meanjsfiles",
+                mean      : [folderName: "mean", uri: "https://github.com/sistcoop-meanjsfiles/mean.git"]
+        ]
 ]
 
+/**
+ * Github configurations*/
 import org.ajoberstar.grgit.*
 
-def cloneGit(path, uri) {
-    File folder = new File(path)
+def cloneGit(cloneOptions) {
+    File folder = new File(cloneOptions.dir)
     if (!folder.exists()) {
-        def cloneOptions = [dir: path, uri: uri]
+        println "Init cloning ${cloneOptions.uri}"
         Grgit.clone(cloneOptions).close()
+    } else {
+        println "folder ${cloneOptions.dir} already exists"
     }
+}
+
+def generateCloneOptions(parentFolderName, repositorie) {
+    def dir = ext.githubDownloadFolder + "/" + parentFolderName + "/" + repositorie.folderName
+    def cloneOptions = [dir: dir, uri: repositorie.uri]
+    return cloneOptions
+}
+
+def releaseTag (cloneOptions) {
+    def credential = [
+            username: "",
+            password: ""
+    ]
+
+    def repo = Grgit.open(new File(cloneOptions.dir), new Credentials(username: credential.username, password: credential.password))
+    def status = repo.status()
+    if (status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
+        repo.commit(all: true, message: "Release ${project.version}", amend: false)
+    }
+    repo.tag.add(name: project.version, message: "Releasing ${project.version}", force: true)
+
+    repo.push()
+    repo.push(tags: true)
+    repo.close()
+
+    println "Releasing ${cloneOptions.uri} to tag ${project.version} success"
 }
 
 task cloneAllRestApi << {
-    def basePath = project.ext.repo.restApi.name
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.iso3166));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.iso4217));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.ubigeo));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.persona));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.rrhh));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.cooperativa));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.socio));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.producto));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.credito));
+    cloneGit(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.sistcoopJsBower));
 
-    cloneGit(basePath + "/" + project.ext.repo.restApi.iso3166.name, project.ext.repo.restApi.iso3166.uri);
-    cloneGit(basePath + "/" + project.ext.repo.restApi.iso4217.name, project.ext.repo.restApi.iso4217.uri);
-    cloneGit(basePath + "/" + project.ext.repo.restApi.ubigeo.name, project.ext.repo.restApi.ubigeo.uri);
-    cloneGit(basePath + "/" + project.ext.repo.restApi.persona.name, project.ext.repo.restApi.persona.uri);
-    cloneGit(basePath + "/" + project.ext.repo.restApi.rrhh.name, project.ext.repo.restApi.rrhh.uri);
-    cloneGit(basePath + "/" + project.ext.repo.restApi.cooperativa.name, project.ext.repo.restApi.cooperativa.uri);
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgIso3166));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgIso4217));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgUbigeo));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgPersona));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgRrhh));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgCooperativa));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgSocio));
+    cloneGit(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgProducto));
+
+    cloneGit(generateCloneOptions(project.ext.repo.angularFiles.folderName, project.ext.repo.angularFiles.sgUtils));
+    cloneGit(generateCloneOptions(project.ext.repo.angularFiles.folderName, project.ext.repo.angularFiles.uiSelectUtils));
+
+    cloneGit(generateCloneOptions(project.ext.repo.meanjsfiles.folderName, project.ext.repo.meanjsfiles.mean));
 }
 
 task releaseAllTag << {
-    def projectVersion = [
-            version: "1.0-beta-1",
-            message: "Release of version 1.0-beta-1"
-    ]
-    def credential = [
-            username:"",
-            password:""
-    ]
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.iso3166));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.iso4217));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.ubigeo));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.persona));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.rrhh));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.cooperativa));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.socio));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.producto));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.credito));
+    releaseTag(generateCloneOptions(project.ext.repo.sistcoop.folderName, project.ext.repo.sistcoop.sistcoopJsBower));
 
-    def basePath = project.ext.repo.restApi.name
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgIso3166));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgIso4217));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgUbigeo));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgPersona));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgRrhh));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgCooperativa));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgSocio));
+    releaseTag(generateCloneOptions(project.ext.repo.restangularFiles.folderName, project.ext.repo.restangularFiles.sgProducto));
 
-    def repoIso3166 = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.iso3166.name), new Credentials(username: credential.username, password: credential.password))
-    def repoIso4217 = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.iso4217.name), new Credentials(username: credential.username, password: credential.password))
-    def repoUbigeo = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.ubigeo.name), new Credentials(username: credential.username, password: credential.password))
-    def repoPersona = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.persona.name), new Credentials(username: credential.username, password: credential.password))
-    def repoRrhh = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.rrhh.name), new Credentials(username: credential.username, password: credential.password))
-    def repoCooperativa = Grgit.open(new File(basePath + "/" + project.ext.repo.restApi.cooperativa.name), new Credentials(username: credential.username, password: credential.password))
+    releaseTag(generateCloneOptions(project.ext.repo.angularFiles.folderName, project.ext.repo.angularFiles.sgUtils));
+    releaseTag(generateCloneOptions(project.ext.repo.angularFiles.folderName, project.ext.repo.angularFiles.uiSelectUtils));
 
-    def status = repoIso3166.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoIso3166.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-    status = repoIso4217.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoIso4217.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-    status = repoUbigeo.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoUbigeo.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-    status = repoPersona.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoPersona.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-    status = repoRrhh.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoRrhh.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-    status = repoCooperativa.status()
-    if(status.unstaged.added || status.unstaged.modified || status.unstaged.removed || status.staged.added || status.staged.modified || status.staged.removed) {
-        repoCooperativa.commit(all: true, message: "Release ${projectVersion.version}", amend: false)
-    }
-
-    repoIso3166.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-    repoIso4217.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-    repoUbigeo.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-    repoPersona.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-    repoRrhh.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-    repoCooperativa.tag.add(name: projectVersion.version, message: projectVersion.message, force: true)
-
-    repoIso3166.push()
-    repoIso3166.push(tags: true)
-    repoIso3166.close()
-
-    repoIso4217.push()
-    repoIso4217.push(tags: true)
-    repoIso4217.close()
-
-    repoUbigeo.push()
-    repoUbigeo.push(tags: true)
-    repoUbigeo.close()
-
-    repoPersona.push()
-    repoPersona.push(tags: true)
-    repoPersona.close()
-
-    repoRrhh.push()
-    repoRrhh.push(tags: true)
-    repoRrhh.close()
-
-    repoCooperativa.push()
-    repoCooperativa.push(tags: true)
-    repoCooperativa.close()
+    releaseTag(generateCloneOptions(project.ext.repo.meanjsfiles.folderName, project.ext.repo.meanjsfiles.mean));
 }
