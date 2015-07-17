@@ -68,8 +68,8 @@ def generateCloneOptions(parentFolderName, repositorie) {
 
 def releaseTag (cloneOptions) {
     def credential = [
-            username: "carlosthe19916",
-            password: "thebeatles19916"
+            username: "",
+            password: ""
     ]
 
     def repo = Grgit.open(new File(cloneOptions.dir), new Credentials(username: credential.username, password: credential.password))
